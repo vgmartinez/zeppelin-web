@@ -32,7 +32,7 @@ buildNumber.properties
 logs
 *.log
 npm-debug.log*
-**node/
+node
 # Runtime data
 pids
 *.pid
