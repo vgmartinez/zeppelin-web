@@ -37,7 +37,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       name : setting.name,
       memory : setting.slaves,
       status : setting.status,
-      master: setting.urls.master,
+      //master: setting.urls.master,
       type : setting.type,
       ui: ui
     };
@@ -100,6 +100,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $scope.showAddNewSetting = false;
     var name = '';
     var newSetting = {};
+    console.log(type);
     //$scope.addNewInterpreterProperty();
     if (type === 'spark') {
       if (!$scope.newClusterSettingSpark.name || !$scope.newClusterSettingSpark.memory) {
@@ -117,9 +118,14 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         return;
       }
       name = $scope.newClusterSettingHadoop.name;
+      var instance = 'm3.xlarge'
+      if ($scope.instance == 1) {
+        type = 'm3.8xlarge'
+      }
       newSetting = {
         name : $scope.newClusterSettingHadoop.name,
-        slaves : $scope.newClusterSettingHadoop.slaves
+        slaves : $scope.newClusterSettingHadoop.slaves,
+        instance: instance
       };
     } else {
       if (!$scope.newClusterSettingRedshift.name || !$scope.newClusterSettingRedshift.nodes) {
@@ -127,14 +133,14 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         return;
       }
       name = $scope.newClusterSettingRedshift.name;
-      type = 'ds2.xlarge'
+      var instance = 'ds2.xlarge'
       if ($scope.instance == 1) {
         type = 'ds2.8xlarge'
       }
       newSetting = {
         name : $scope.newClusterSettingRedshift.name,
         slaves : $scope.newClusterSettingRedshift.nodes,
-        type : type
+        instance : instance
       };
     }
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
@@ -147,17 +153,15 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       });
   };
 
-  var getStatusCluster = function(name) {
+  var getStatusCluster = function(clusterId) {
+      console.log(clusterId);
       var interval = $interval(function(){
-        $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status').
+        $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/' + clusterId).
           success(function(data, status, headers, config) {
-            for (var settingId in data.body) {
-              var setting = data.body[settingId];
-              console.log(setting);
-              if ((setting.status === 'waiting') || (setting.status === 'success') || (setting.status.indexOf('ec2') >= 0) || (setting.status === 'available') || (setting.status === 'removing')) {
-                console.log('entre');
-                $interval.cancel(interval);
-              }
+            console.log(data);
+            if ((data.message === 'waiting') || (data.message === 'success') || (data.message.indexOf('ec2') >= 0) || (data.message === 'available') || (data.message === 'removing')) {
+              console.log('entre');
+              $interval.cancel(interval);
             }
           }).
           error(function(data, status, headers, config) {
@@ -190,13 +194,13 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       }
     }
   };
-  $scope.removeClusterSetting = function(settingId, snapshot) {
+  $scope.removeClusterSetting = function(settingId) {
     var result = confirm('Do you want to delete this cluster?');
     if (!result) {
       return;
     }
     $scope.tag='removing';
-    $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId+'/'+snapshot).
+    $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];

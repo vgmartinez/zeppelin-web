@@ -105,6 +105,7 @@ limitations under the License.
               <tr>
                 <th>name</th>
                 <th>nodes</th>
+                <th>type</th>
               </tr>
               <tr>
                 <td>
@@ -123,7 +124,12 @@ limitations under the License.
                      ng-model="newClusterSettingHadoop.slaves">
                   </input>
                 </td>
-
+                <td>
+                  <select class="form-control" style="height:33px; width:130px" ng-model="instance">
+                    <option value="0">m3.xlarge</option>
+                    <option value="1">m3.8xlarge</option>
+                  </select>
+                </td>
               </tr>
             </table>
             <span class="btn btn-info"
@@ -187,7 +193,7 @@ limitations under the License.
   </div>
 </div>
 
-<div class="box width-full home"
+<div class="box width-full"
      ng-repeat="setting in interpreterSettings">
   <div>
     <div class="row interpreter">
