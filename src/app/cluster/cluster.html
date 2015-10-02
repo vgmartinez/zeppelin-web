@@ -106,6 +106,7 @@ limitations under the License.
                 <th>name</th>
                 <th>nodes</th>
                 <th>type</th>
+                <th>aplications</th>
               </tr>
               <tr>
                 <td>
@@ -129,6 +130,19 @@ limitations under the License.
                     <option value="0">m3.xlarge</option>
                     <option value="1">m3.8xlarge</option>
                   </select>
+                </td>
+                <td>
+                  <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active">
+                      <input type="checkbox" autocomplete="off" checked> hive
+                    </label>
+                    <label class="btn btn-primary">
+                      <input type="checkbox" autocomplete="off"> spark
+                    </label>
+                    <label class="btn btn-primary">
+                      <input type="checkbox" autocomplete="off"> hbase
+                    </label>
+                  </div>
                 </td>
               </tr>
             </table>
@@ -194,7 +208,7 @@ limitations under the License.
 </div>
 
 <div class="box width-full"
-     ng-repeat="setting in interpreterSettings">
+     ng-repeat="setting in clusterSettings">
   <div>
     <div class="row interpreter">
       <div class="col-md-12">
@@ -204,7 +218,7 @@ limitations under the License.
         <span style="float:right">
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
-                  copyOriginInterpreterSettingProperties(setting.id)">
+                  copyOriginClusterSettingProperties(setting.id)">
             <span class="fa fa-pencil"></span> resize</button>
           <button class="btn btn-default btn-xs"
                   ng-click="removeClusterSetting(setting.id)">
@@ -219,8 +233,9 @@ limitations under the License.
             <th style="width:15%">name</th>
             <th style="width:10%">nodes</th>
             <th style="width:15%">status</th>
-            <th style="width:50%">master</th>
+            <th style="width:40%">master</th>
             <th style="width:10%" ng-if="setting.type != 'redshift'">ui</th>
+            <th style="width:10%">aplications</th>
           </tr>
           <tr>
             <td>{{setting.name}}</td>
@@ -231,7 +246,7 @@ limitations under the License.
             </td>
             <td>
               <div class="progress" style="width: 80px">
-                <div  ng-class="{running : 'progress-bar progress-bar-success', waiting : 'progress-bar progress-bar-success', available : 'progress-bar progress-bar-success', starting : 'progress-bar progress-bar-striped active', error : 'progress-bar progress-bar-danger', removing : 'progress-bar progress-bar-danger', terminating : 'progress-bar progress-bar-danger',terminated : 'progress-bar progress-bar-danger'}[setting.status]"
+                <div  ng-class="{running : 'progress-bar progress-bar-success', waiting : 'progress-bar progress-bar-success', available : 'progress-bar progress-bar-success', starting : 'progress-bar progress-bar-striped active',creating : 'progress-bar progress-bar-striped active', error : 'progress-bar progress-bar-danger', removing : 'progress-bar progress-bar-danger', terminating : 'progress-bar progress-bar-danger',terminated : 'progress-bar progress-bar-danger'}[setting.status]"
                           role="progressbar" aria-valuemax="100" style="width:100%">
                   {{setting.status}}
                 </div>
@@ -240,6 +255,11 @@ limitations under the License.
             <td>{{setting.url}}</td>
 
             <td ng-if="setting.type != 'redshift'">
+              <span ng-repeat="ui in setting.ui">
+                <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
+              </span>
+            </td>
+            <td>
               <span ng-repeat="ui in setting.ui">
                 <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
               </span>

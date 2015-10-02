@@ -17,10 +17,10 @@
 
 /**
  * @ngdoc function
- * @name zeppelinWebApp.controller:InterpreterCtrl
+ * @name zeppelinWebApp.controller:ClusterCtrl
  * @description
- * # InterpreterCtrl
- * Controller of interpreter, manage the note (update)
+ * # ClusterCtrl
+ * Controller of cluster, manage the note (update)
  */
 angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $interval, $modal, $log, baseUrlSrv) {
   var remoteSettingToLocalSetting = function(setting) {
@@ -46,18 +46,15 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
   var getClusterSettings = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/cluster/setting').
       success(function(data, status, headers, config) {
-        var interpreterSettings = [];
-        console.log('getInterpreterSettings=%o', data);
+        var clusterSettings = [];
 
         for (var settingId in data.body) {
           var setting = data.body[settingId];
           console.log(setting);
-          interpreterSettings.push(remoteSettingToLocalSetting(setting));
-
+          clusterSettings.push(remoteSettingToLocalSetting(setting));
           getStatusCluster(setting.id);
         }
-        console.log('interpreterSettings=%o', interpreterSettings);
-        $scope.interpreterSettings = interpreterSettings;
+        $scope.clusterSettings = clusterSettings;
 
       }).
       error(function(data, status, headers, config) {
@@ -71,17 +68,16 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       return;
     }
 
-    $scope.addNewInterpreterProperty(settingId);
+    $scope.addNewClusterProperty(settingId);
 
     var request;
     var name = '';
 
-    for (var i=0; i < $scope.interpreterSettings.length; i++) {
-      var setting = $scope.interpreterSettings[i];
+    for (var i=0; i < $scope.clusterSettings.length; i++) {
+      var setting = $scope.clusterSettings[i];
       if(setting.id === settingId) {
-        console.log($scope.interpreterSettings);
         request = setting.memory;
-        $scope.interpreterSettings[i].memory = setting.memory;
+        $scope.clusterSettings[i].memory = setting.memory;
         name = setting.name;
         break;
       }
@@ -100,8 +96,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $scope.showAddNewSetting = false;
     var name = '';
     var newSetting = {};
-    console.log(type);
-    //$scope.addNewInterpreterProperty();
+    //$scope.addNewClusterProperty();
     if (type === 'spark') {
       if (!$scope.newClusterSettingSpark.name || !$scope.newClusterSettingSpark.memory) {
         alert('Please determine name and memory');
@@ -158,9 +153,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       var interval = $interval(function(){
         $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/' + clusterId).
           success(function(data, status, headers, config) {
-            console.log(data);
-            if ((data.message === 'waiting') || (data.message === 'success') || (data.message.indexOf('ec2') >= 0) || (data.message === 'available') || (data.message === 'removing')) {
-              console.log('entre');
+            if ((data.message === 'waiting') || (data.message === 'success') || (data.message === 'available') || (data.message === 'removing')) {
               $interval.cancel(interval);
             }
           }).
@@ -170,18 +163,18 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       }, 6000);
     };
 
-  $scope.addNewInterpreterProperty = function(settingId) {
+  $scope.addNewClusterProperty = function(settingId) {
     if(settingId === undefined) {
-      if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
+      if (!$scope.newClusterSetting.propertyKey || $scope.newClusterSetting.propertyKey === '') {
         return;
       }
-      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
-      $scope.newInterpreterSetting.propertyValue = '';
-      $scope.newInterpreterSetting.propertyKey = '';
+      $scope.newClusterSetting.properties[$scope.newClusterSetting.propertyKey] = { value : $scope.newClusterSetting.propertyValue};
+      $scope.newClusterSetting.propertyValue = '';
+      $scope.newClusterSetting.propertyKey = '';
     }
     else {
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
-        var setting = $scope.interpreterSettings[i];
+      for (var i=0; i < $scope.clusterSettings.length; i++) {
+        var setting = $scope.clusterSettings[i];
         if (setting.id === settingId){
           if (!setting.propertyKey || setting.propertyKey === '') {
             return;
@@ -202,11 +195,10 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $scope.tag='removing';
     $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId).
       success(function(data, status, headers, config) {
-        for (var i=0; i < $scope.interpreterSettings.length; i++) {
-          var setting = $scope.interpreterSettings[i];
+        for (var i=0; i < $scope.clusterSettings.length; i++) {
+          var setting = $scope.clusterSettings[i];
           if (setting.id === settingId) {
-            $scope.interpreterSettings.splice(i, 1);
-            //$interval.cancel(interval);
+            $scope.clusterSettings.splice(i, 1);
             break;
           }
         }
@@ -216,10 +208,9 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       });
   };
   var init = function() {
-    // when interpreter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what interpreter page want. Force set default looknfeel.
     $rootScope.$emit('setLookAndFeel', 'default');
-    $scope.interpreterSettings = [];
-    $scope.availableInterpreters = {};
+    $scope.clusterSettings = [];
+    $scope.availableClusters = {};
     getClusterSettings();
   };
 
