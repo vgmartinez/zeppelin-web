@@ -25,13 +25,23 @@
 angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $interval, $modal, $log, baseUrlSrv) {
   var remoteSettingToLocalSetting = function(setting) {
     var ui = [];
+    var apps = [];
+
     for (var key in setting.urls) {
       ui.push({
         'tag': key,
         'url': setting.urls[key]
       });
     }
-    console.log(ui);
+
+    for (var key in setting.apps) {
+      if (setting.apps[key]) {
+        apps.push({
+          'app': key
+        });
+      }
+    }
+
     return {
       id : setting.id,
       name : setting.name,
@@ -39,6 +49,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       status : setting.status,
       //master: setting.urls.master,
       type : setting.type,
+      apps: apps,
       ui: ui
     };
   };
@@ -52,7 +63,9 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
           var setting = data.body[settingId];
           console.log(setting);
           clusterSettings.push(remoteSettingToLocalSetting(setting));
-          getStatusCluster(setting.id);
+          if ((setting.status === 'starting') || (setting.status === 'bootstrapping') || (setting.status === 'running') || (setting.status === 'terminating')) {
+            getStatusCluster(setting.id);
+          }
         }
         $scope.clusterSettings = clusterSettings;
 
@@ -82,7 +95,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         break;
       }
     }
-    console.log(request);
     $http.put(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId, request).
     success(function(data, status, headers, config) {
       getClusterSettings();
@@ -120,7 +132,8 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       newSetting = {
         name : $scope.newClusterSettingHadoop.name,
         slaves : $scope.newClusterSettingHadoop.slaves,
-        instance: instance
+        instance: instance,
+        app: $scope.newClusterSettingHadoop.app
       };
     } else {
       if (!$scope.newClusterSettingRedshift.name || !$scope.newClusterSettingRedshift.nodes) {
@@ -153,8 +166,10 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       var interval = $interval(function(){
         $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/' + clusterId).
           success(function(data, status, headers, config) {
-            if ((data.message === 'waiting') || (data.message === 'success') || (data.message === 'available') || (data.message === 'removing')) {
+            console.log(data.message);
+            if ((data.message === 'waiting') || (data.message === 'success') || (data.message === 'available') || (data.message === 'terminated')) {
               $interval.cancel(interval);
+              getClusterSettings();
             }
           }).
           error(function(data, status, headers, config) {
@@ -192,14 +207,12 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     if (!result) {
       return;
     }
-    $scope.tag='removing';
     $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.clusterSettings.length; i++) {
           var setting = $scope.clusterSettings[i];
           if (setting.id === settingId) {
-            $scope.clusterSettings.splice(i, 1);
-            break;
+            getStatusCluster(settingId);
           }
         }
       }).
@@ -207,6 +220,15 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         console.log('Error %o %o', status, data.message);
       });
   };
+
+  $scope.appToHadoop = function() {
+    $scope.newClusterSettingHadoop.app = {
+      spark: false,
+      hive:true,
+      hue:false
+    };
+  };
+
   var init = function() {
     $rootScope.$emit('setLookAndFeel', 'default');
     $scope.clusterSettings = [];

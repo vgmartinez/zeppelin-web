@@ -24,7 +24,7 @@ limitations under the License.
           </button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
             <li role="presentation"><a href="" ng-click="showAddNewSettingSpark=true;showAddNewSettingHadoop=false;newClusterSettingSpark.memory=8;showAddNewSettingRedshift=false; showAddNewSetting = !showAddNewSetting">Spark</a> </li>
-            <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingSpark=false;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting">Hadoop</a> </li>
+              <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingSpark=false;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting;appToHadoop()">Hadoop</a> </li>
             <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingHadoop=false;showAddNewSettingSpark=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
           </ul>
         </div>
@@ -97,6 +97,7 @@ limitations under the License.
             </span>
             </div>
           </div>
+          <form role="form">
           <div class="col-md-12"
              ng-show="showAddNewSettingHadoop">
             <div class="form-group">
@@ -126,27 +127,21 @@ limitations under the License.
                   </input>
                 </td>
                 <td>
-                  <select class="form-control" style="height:33px; width:130px" ng-model="instance">
+                  <select class="form-control" style="height:33px; width:130px"  ng-model="newClusterSettingHadoop.instance">
                     <option value="0">m3.xlarge</option>
                     <option value="1">m3.8xlarge</option>
                   </select>
                 </td>
                 <td>
-                  <div class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-primary active">
-                      <input type="checkbox" autocomplete="off" checked> hive
-                    </label>
-                    <label class="btn btn-primary">
-                      <input type="checkbox" autocomplete="off"> spark
-                    </label>
-                    <label class="btn btn-primary">
-                      <input type="checkbox" autocomplete="off"> hbase
-                    </label>
+                  <div class="btn-group">
+                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hive" btn-checkbox> hive</label>
+                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.spark" btn-checkbox> spark</label>
+                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hue" btn-checkbox>hue</label>
                   </div>
                 </td>
               </tr>
             </table>
-            <span class="btn btn-info"
+            <span class="btn btn-info" type="submit"
                   ng-click="addNewClusterSetting('hadoop')">
               Create
             </span>
@@ -156,6 +151,7 @@ limitations under the License.
             </span>
             </div>
           </div>
+        </form>
           <div class="col-md-12"
              ng-show="showAddNewSettingRedshift">
             <div class="form-group">
@@ -246,7 +242,16 @@ limitations under the License.
             </td>
             <td>
               <div class="progress" style="width: 80px">
-                <div  ng-class="{running : 'progress-bar progress-bar-success', waiting : 'progress-bar progress-bar-success', available : 'progress-bar progress-bar-success', starting : 'progress-bar progress-bar-striped active',creating : 'progress-bar progress-bar-striped active', error : 'progress-bar progress-bar-danger', removing : 'progress-bar progress-bar-danger', terminating : 'progress-bar progress-bar-danger',terminated : 'progress-bar progress-bar-danger'}[setting.status]"
+                <div  ng-class="{running : 'progress-bar progress-bar-success',
+                                waiting : 'progress-bar progress-bar-success',
+                                available : 'progress-bar progress-bar-success',
+                                starting : 'progress-bar progress-bar-striped active',
+                                bootstrapping : 'progress-bar progress-bar-striped active',
+                                creating : 'progress-bar progress-bar-striped active',
+                                error : 'progress-bar progress-bar-danger',
+                                terminating : 'progress-bar progress-bar-danger',
+                                terminated : 'progress-bar progress-bar-danger'}
+                                [setting.status]"
                           role="progressbar" aria-valuemax="100" style="width:100%">
                   {{setting.status}}
                 </div>
@@ -260,11 +265,10 @@ limitations under the License.
               </span>
             </td>
             <td>
-              <span ng-repeat="ui in setting.ui">
-                <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
-              </span>
+              <div class="btn-group">
+                <label ng-repeat="app in setting.apps" class="btn-xs btn btn-primary">{{app.app}}</label>
+              </div>
             </td>
-
           </tr>
         </table>
         <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
