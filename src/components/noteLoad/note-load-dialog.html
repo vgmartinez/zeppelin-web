@@ -11,34 +11,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-  <div id="noteNameModal" class="modal fade" role="dialog" modalvisible previsiblecallback="notenamectrl.preVisible"
-    targetinput="noteName" tabindex='-1'>
+  <div id="loadNoteModal" class="modal fade" role="dialog" tabindex='-1'>
     <div class="modal-dialog">
 
       <!-- Modal content-->
-      <div class="modal-content" id="NotenameCtrl">
+      <div class="modal-content" id="NoteLoadCtrl">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" ng-show="!notenamectrl.clone">Create new note</h4>
-          <h4 class="modal-title" ng-show="notenamectrl.clone">Clone note</h4>
+          <h4 class="modal-title">Load note</h4>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="noteName">Note Name</label> <input
-              placeholder="Note name" type="text" class="form-control"
-              id="noteName" ng-model="note.notename">
+            <label for="noteName">Note url</label> <input
+              placeholder="http(s)://your-note-url.json" type="text" class="form-control"
+              id="noteUrl" ng-model="note.url">
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" id="createNoteButton"
             class="btn btn-default"
-            ng-show="!notenamectrl.clone"
-            data-dismiss="modal" ng-click="notenamectrl.createNote()">Create
-            Note</button>
-            <button type="button" id="createNoteButton"
-            class="btn btn-default"
-            ng-show="notenamectrl.clone"
-            data-dismiss="modal" ng-click="notenamectrl.createNote()">Clone
+            data-dismiss="modal" ng-click="noteloadctrl.loadNote()">Load
             Note</button>
         </div>
       </div>

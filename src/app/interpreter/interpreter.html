@@ -39,7 +39,7 @@ limitations under the License.
   <div>
     <div class="row interpreter">
       <div class="col-md-12">
-        <h3 class="interpreter-title">{{setting.name}} 
+        <h3 class="interpreter-title">{{setting.name}}
           <small>
             <span ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
@@ -49,6 +49,14 @@ limitations under the License.
           </small>
         </h3>
         <span style="float:right">
+          <button ng-show="setting.group === 'spark' || setting.group === 'redshift' || setting.group === 'hive' ? true: false"
+              class="btn btn-default btn-xs"
+              ng-click="toggleSetting(setting.id, setting.group)"
+              tooltip-placement="top" tooltip="Set cluster">
+            <span class="fa fa-cog"
+                 ng-style="{color: 'black' }">
+            </span>
+          </button>
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
@@ -61,6 +69,33 @@ limitations under the License.
             <span class="fa fa-remove"></span> remove</button>
         </span>
       </div>
+
+      <div ng-show="showSetting && setting.id == nameInt ? true : false"
+         class="setting">
+        <div>
+          <h5>Clusters</h5>
+        </div>
+        <p>
+          Select cluster to run the interpreter.
+        </p>
+        <hr />
+        <div>
+          <div data-ng-model="clusterSettings">
+            <div data-ng-repeat="item in clusterSettings">
+              <div ng-click="item.selected = !item.selected"
+                   class="btn"
+                   ng-class="{'btn-success': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-show="!$first">, </span>{{item.urls.dns}}</span></small></div>
+            </div>
+          </div>
+        </div>
+        <br />
+        <div>
+          <button class="btn btn-success" ng-click="saveSetting(setting.id)">Save</button>
+          <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
+        </div>
+      <br />
+      </div>
+
     </div>
     <br />
     <div class="row interpreter">

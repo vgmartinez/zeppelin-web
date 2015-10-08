@@ -25,18 +25,24 @@ limitations under the License.
       You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br>
 
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
           <h4>Notebook</h4>
 
           <div>
-            <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
-              <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-            <ul style="list-style-type: none;">
-              <li ng-repeat="note in home.notes.list | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
-                <i style="font-size: 10px;" class="icon-doc"></i>
-                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
-              </li>
-            </ul>
+            <div class="col-md-4">
+              <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
+                <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+              <ul style="list-style-type: none;">
+                <li ng-repeat="note in home.notes.list | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+                  <i style="font-size: 10px;" class="icon-doc"></i>
+                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-2">
+              <h5><a href="" data-toggle="modal" data-target="#loadNoteModal" style="text-decoration: none;">
+                <i style="font-size: 15px;" class="fa fa-copy"></i></a></h5>
+            </div>
           </div>
         </div>
         <div class="col-md-6">

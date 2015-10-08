@@ -105,7 +105,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.newInterpreterGroupChange = function() {
     var el = _.pluck(_.filter($scope.availableInterpreters, { 'group': $scope.newInterpreterSetting.group }), 'properties');
-    
+
     var properties = {};
     for (var i=0; i < el.length; i++) {
       var intpInfo = el[i];
@@ -116,7 +116,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         };
       }
     }
-    
+
     $scope.newInterpreterSetting.properties = properties;
   };
 
@@ -189,7 +189,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return;
       }
-      
+
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue
       };
@@ -203,6 +203,118 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       setting.properties[setting.propertyKey] = setting.propertyValue;
       emptyNewProperty(setting);
     }
+  };
+
+  var getClusterSettings = function(id, group) {
+    $http.get(baseUrlSrv.getRestApiBase()+ '/cluster/setting').
+      success(function(data, status, headers, config) {
+        var clusterSettings = [];
+        var aux;
+        if (group === 'hive' || group === 'spark') {
+          aux = 'emr';
+        } else {
+          aux = 'redshift'
+        }
+
+        for (var settingId in data.body) {
+          var setting = data.body[settingId];
+          if (setting.type === aux) {
+            clusterSettings.push(setting);
+          }
+        }
+        console.log(clusterSettings);
+        $scope.clusterSettings = clusterSettings;
+
+        $scope.clusterSettingsOrig = jQuery.extend(true, [], $scope.clusterSettings); // to check dirty
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  };
+
+  var isSettingDirty = function() {
+    if (angular.equals($scope.clusterSettings, $scope.clusterSettingsOrig)) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  $scope.toggleSetting = function(id, group) {
+    console.log(group);
+    if ($scope.showSetting) {
+      $scope.closeSetting();
+    } else {
+      $scope.openSetting(id, group);
+    }
+  };
+
+  $scope.openSetting = function(id, group) {
+    $scope.showSetting = true;
+    $scope.nameInt = id;
+    getClusterSettings(id, group);
+  };
+
+  $scope.closeSetting = function() {
+    if (isSettingDirty()) {
+      var result = confirm('Changes will be discarded');
+      if (!result) {
+        return;
+      }
+    }
+    $scope.showSetting = false;
+  };
+
+  $scope.saveSetting = function(settingId) {
+    var selectedSettingIds = [];
+    for (var no in $scope.clusterSettings) {
+      var setting = $scope.clusterSettings[no];
+      if (setting.selected) {
+        selectedSettingIds.push(setting);
+      }
+    }
+    //console.log(selectedSettingIds);
+    if (selectedSettingIds.length > 1) {
+      var result = alert('Select only one cluster.');
+      if (!result) {
+        return;
+      }
+    };
+    if (isSettingDirty()) {
+      var result = confirm('Do you want to use this cluster in the interpreter?');
+      if (!result) {
+        return;
+      }
+    }
+    var selectedId;
+    var url;
+    if (selectedSettingIds.length == 0) {
+      selectedId = '';
+      for (var no in $scope.clusterSettings) {
+        var setting = $scope.clusterSettings[no];
+        if (setting.id === settingId) {
+          if (setting.group === 'hive') {
+            url = 'localhost';
+          } else {
+            url = 'local[*]'
+          }
+        }
+      }
+    } else {
+      console.log(selectedSettingIds);
+      selectedId = selectedSettingIds[0].id;
+      url = selectedSettingIds[0].url;
+    }
+    console.log(selectedId);
+    $http.put(baseUrlSrv.getRestApiBase() + '/cluster/set/' + settingId, selectedId).
+      success(function(data, status, headers, config) {
+        console.log('Interpreter binding %o saved', url);
+        $scope.showSetting = false;
+        $scope.updateInterpreterSettingCluster(settingId, url);
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   var init = function() {

@@ -32,6 +32,21 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
     cloneNotebook: function(noteIdToClone, newNoteName ) {
       websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
     },
+
+    loadNotebook: function(note ) {
+      console.log(note.paragraphs);
+      websocketEvents.sendNewEvent({
+        op: 'LOAD_NOTE',
+        data: {
+          angularObjects: note.angularObjects,
+          info: note.info,
+          config: note.config,
+          name: note.name,
+          paragraphs: note.paragraphs
+        }
+      });
+    },
+
     getNotebookList: function() {
       websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
     },

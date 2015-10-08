@@ -26,12 +26,16 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
   var remoteSettingToLocalSetting = function(setting) {
     var ui = [];
     var apps = [];
-
+    var master;
     for (var key in setting.urls) {
-      ui.push({
-        'tag': key,
-        'url': setting.urls[key]
-      });
+      if(key !== 'dns') {
+        ui.push({
+          'tag': key,
+          'url': setting.urls[key]
+        });
+      } else {
+        master = setting.urls[key];
+      }
     }
 
     for (var key in setting.apps) {
@@ -47,7 +51,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       name : setting.name,
       memory : setting.slaves,
       status : setting.status,
-      //master: setting.urls.master,
+      master: master,
       type : setting.type,
       apps: apps,
       ui: ui
@@ -109,17 +113,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     var name = '';
     var newSetting = {};
     //$scope.addNewClusterProperty();
-    if (type === 'spark') {
-      if (!$scope.newClusterSettingSpark.name || !$scope.newClusterSettingSpark.memory) {
-        alert('Please determine name and memory');
-        return;
-      }
-      name = $scope.newClusterSettingSpark.name;
-      newSetting = {
-        name : $scope.newClusterSettingSpark.name,
-        slaves : Math.floor($scope.newClusterSettingSpark.memory / 7)
-      };
-    } else if(type === 'hadoop') {
+    if(type === 'emr') {
       if (!$scope.newClusterSettingHadoop.name || !$scope.newClusterSettingHadoop.slaves) {
         alert('Please determine name and memory');
         return;
@@ -148,6 +142,8 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       newSetting = {
         name : $scope.newClusterSettingRedshift.name,
         slaves : $scope.newClusterSettingRedshift.nodes,
+        user: $scope.newClusterSettingRedshift.user,
+        passw: $scope.newClusterSettingRedshift.passw,
         instance : instance
       };
     }

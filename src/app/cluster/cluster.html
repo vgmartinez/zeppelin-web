@@ -23,9 +23,8 @@ limitations under the License.
           Create
           </button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
-            <li role="presentation"><a href="" ng-click="showAddNewSettingSpark=true;showAddNewSettingHadoop=false;newClusterSettingSpark.memory=8;showAddNewSettingRedshift=false; showAddNewSetting = !showAddNewSetting">Spark</a> </li>
-              <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingSpark=false;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting;appToHadoop()">Hadoop</a> </li>
-            <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingHadoop=false;showAddNewSettingSpark=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting;appToHadoop()">EMR</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingHadoop=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
           </ul>
         </div>
       </div>
@@ -57,47 +56,6 @@ limitations under the License.
         <div class="clusterSettingAdd"
              ng-show="showAddNewSetting">
           <hr />
-          <div class="col-md-12"
-             ng-show="showAddNewSettingSpark">
-            <div class="form-group">
-            <h4>Create new cluster Spark</h4>
-
-            <table class="table table-striped properties">
-              <tr>
-                <th>name</th>
-                <th>memory</th>
-              </tr>
-              <tr>
-                <td>
-                  <input id="newClusterSettingName"
-                     input pu-elastic-input
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingSpark.name">
-                  </input>
-                </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     input pu-elastic-input
-                     type="number"
-                     min="8" max="1024" step="1"
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingSpark.memory">
-                  </input>
-                </td>
-              </tr>
-            </table>
-
-            <span class="btn btn-info"
-                  ng-click="addNewClusterSetting('spark')">
-              Create
-            </span>
-            <span class="btn btn-default"
-                  ng-click="showAddNewSetting=false">
-              Cancel
-            </span>
-            </div>
-          </div>
-          <form role="form">
           <div class="col-md-12"
              ng-show="showAddNewSettingHadoop">
             <div class="form-group">
@@ -141,8 +99,8 @@ limitations under the License.
                 </td>
               </tr>
             </table>
-            <span class="btn btn-info" type="submit"
-                  ng-click="addNewClusterSetting('hadoop')">
+            <span class="btn btn-info"
+                  ng-click="addNewClusterSetting('emr')">
               Create
             </span>
             <span class="btn btn-default"
@@ -151,7 +109,6 @@ limitations under the License.
             </span>
             </div>
           </div>
-        </form>
           <div class="col-md-12"
              ng-show="showAddNewSettingRedshift">
             <div class="form-group">
@@ -161,6 +118,9 @@ limitations under the License.
                 <th>name</th>
                 <th>nodes</th>
                 <th>type</th>
+                <th>user</th>
+                <th>password</th>
+                <th>confirm</th>
               </tr>
               <tr>
                 <td>
@@ -185,6 +145,29 @@ limitations under the License.
                       <option value="1">ds2.8xlarge</option>
                     </select>
                   </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     input pu-elastic-input
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingRedshift.user">
+                  </input>
+                </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     input pu-elastic-input
+                     type="password"
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingRedshift.passw">
+                  </input>
+                </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     input pu-elastic-input
+                     type="password"
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingRedshift.passw">
+                  </input>
+                </td>
               </tr>
             </table>
             <span class="btn btn-info"
@@ -231,7 +214,7 @@ limitations under the License.
             <th style="width:15%">status</th>
             <th style="width:40%">master</th>
             <th style="width:10%" ng-if="setting.type != 'redshift'">ui</th>
-            <th style="width:10%">aplications</th>
+            <th style="width:10%" ng-if="setting.type != 'redshift'">aplications</th>
           </tr>
           <tr>
             <td>{{setting.name}}</td>
@@ -257,14 +240,14 @@ limitations under the License.
                 </div>
               </div>
             </td>
-            <td>{{setting.url}}</td>
+            <td>{{setting.master}}</td>
 
             <td ng-if="setting.type != 'redshift'">
               <span ng-repeat="ui in setting.ui">
                 <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
               </span>
             </td>
-            <td>
+            <td ng-if="setting.type != 'redshift'">
               <div class="btn-group">
                 <label ng-repeat="app in setting.apps" class="btn-xs btn btn-primary">{{app.app}}</label>
               </div>
