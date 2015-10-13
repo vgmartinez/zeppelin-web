@@ -56,130 +56,152 @@ limitations under the License.
         <div class="clusterSettingAdd"
              ng-show="showAddNewSetting">
           <hr />
-          <div class="col-md-12"
-             ng-show="showAddNewSettingHadoop">
-            <div class="form-group">
-            <h4>Create new cluster Hadoop</h4>
-            <table class="table table-striped properties">
-              <tr>
-                <th>name</th>
-                <th>nodes</th>
-                <th>type</th>
-                <th>aplications</th>
-              </tr>
-              <tr>
-                <td>
-                  <input id="newClusterSettingName"
-                     input pu-elastic-input
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingHadoop.name">
-              </input>
-                </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     type="number"
-                     min="2" max="30" step="1"
-                     input pu-elastic-input
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingHadoop.slaves">
-                  </input>
-                </td>
-                <td>
-                  <select class="form-control" style="height:33px; width:130px"  ng-model="newClusterSettingHadoop.instance">
-                    <option value="0">m3.xlarge</option>
-                    <option value="1">m3.8xlarge</option>
-                  </select>
-                </td>
-                <td>
-                  <div class="btn-group">
-                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hive" btn-checkbox> hive</label>
-                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.spark" btn-checkbox> spark</label>
-                    <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hue" btn-checkbox>hue</label>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <span class="btn btn-info"
-                  ng-click="addNewClusterSetting('emr')">
-              Create
-            </span>
-            <span class="btn btn-default"
-                  ng-click="showAddNewSetting=false">
-              Cancel
-            </span>
-            </div>
-          </div>
-          <div class="col-md-12"
-             ng-show="showAddNewSettingRedshift">
-            <div class="form-group">
-            <h4>Create new cluster Redshift</h4>
-            <table class="table table-striped properties">
-              <tr>
-                <th>name</th>
-                <th>nodes</th>
-                <th>type</th>
-                <th>user</th>
-                <th>password</th>
-                <th>confirm</th>
-              </tr>
-              <tr>
-                <td>
-                  <input id="newClusterSettingName"
-                     input pu-elastic-input
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingRedshift.name">
-                  </input>
-                </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     input pu-elastic-input
-                     type="number"
-                     min="2" max="30" step="1"
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingRedshift.nodes">
-                  </input>
-                </td>
+          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('emr');reset()">
+            <div class="col-md-12"
+               ng-show="showAddNewSettingHadoop">
+              <div class="form-group">
+              <h4>Create new cluster Hadoop</h4>
+              <table class="table table-striped properties">
+                <tr>
+                  <th>name</th>
+                  <th>nodes</th>
+                  <th>type</th>
+                  <th>aplications</th>
+                </tr>
+                <tr>
                   <td>
-                    <select class="form-control" style="height:33px; width:130px" ng-model="instance">
-                      <option value="0">ds2.xlarge</option>
-                      <option value="1">ds2.8xlarge</option>
+                    <div class="form-group">
+                      <input id="newClusterSettingName"
+                         class="form-control"
+                         required
+                         pu-elastic-input-minwidth="180px"
+                         ng-model="newClusterSettingHadoop.name">
+                      </input>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterSettingMemory"
+                         class="form-control"
+                         type="number"
+                         data-toggle="validator"
+                         required
+                         min="2" max="30" step="1"
+                         ng-model="newClusterSettingHadoop.slaves">
+                      </input>
+                    </div>
+                  </td>
+                  <td>
+                    <select class="selectpicker form-control" style="height:33px; width:130px" ng-model="instance">
+                      <option value>ds2.xlarge</option>
+                      <option>ds2.8xlarge</option>
                     </select>
                   </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     input pu-elastic-input
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingRedshift.user">
-                  </input>
-                </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     input pu-elastic-input
-                     type="password"
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingRedshift.passw">
-                  </input>
-                </td>
-                <td>
-                  <input id="newClusterSettingMemory"
-                     input pu-elastic-input
-                     type="password"
-                     pu-elastic-input-minwidth="180px"
-                     ng-model="newClusterSettingRedshift.passw">
-                  </input>
-                </td>
-              </tr>
-            </table>
-            <span class="btn btn-info"
-                  ng-click="addNewClusterSetting('redshift')">
-              Create
-            </span>
-            <span class="btn btn-default"
-                  ng-click="showAddNewSetting=false">
-              Cancel
-            </span>
+                  <td>
+                    <div class="btn-group">
+                      <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hive" btn-checkbox> hive</label>
+                      <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.spark" btn-checkbox> spark</label>
+                      <label class="btn btn-primary" ng-model="newClusterSettingHadoop.app.hue" btn-checkbox>hue</label>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              <button type="submit" class="btn btn-primary">Create</button>
+              <span class="btn btn-default"
+                    ng-click="showAddNewSetting=false">
+                Cancel
+              </span>
+              </div>
             </div>
-          </div>
+          </form>
+          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('redshift');reset()">
+            <div class="col-md-12"
+               ng-show="showAddNewSettingRedshift">
+              <div class="form-group">
+              <h4>Create new cluster Redshift</h4>
+              <table class="table table-striped properties">
+                <tr>
+                  <th for="inputName" class="control-label">name</th>
+                  <th>nodes</th>
+                  <th>type</th>
+                  <th>user</th>
+                  <th>password</th>
+                  <th>confirm</th>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterSettingName"
+                         class="form-control"
+                         required
+                         pu-elastic-input-minwidth="180px"
+                         ng-model="newClusterSettingRedshift.name">
+                      </input>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterSettingMemory"
+                         class="form-control"
+                         type="number"
+                         data-toggle="validator"
+                         required
+                         min="2" max="30" step="1"
+                         ng-model="newClusterSettingRedshift.nodes">
+                      </input>
+                    </div>
+                  </td>
+                    <td>
+                      <select class="selectpicker form-control" style="height:33px; width:130px" ng-model="instance">
+                        <option value>ds2.xlarge</option>
+                        <option>ds2.8xlarge</option>
+                      </select>
+                    </td>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterSettingMemory"
+                         class="form-control"
+                         required
+                         pu-elastic-input-minwidth="180px"
+                         ng-model="newClusterSettingRedshift.user">
+                      </input>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterPassw"
+                         class="form-control"
+                         pattern="^[_A-z0-9]{1,}$"
+                         type="password"
+                         data-minlength="6"
+                         required
+                         ng-model="newClusterSettingRedshift.passw">
+                      </input>
+                      <span class="help-block">Minimum of 6 characters</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="form-group">
+                      <input id="newClusterSettingMemory"
+                         class="form-control"
+                         type="password"
+                         required
+                         ng-model="newClusterSettingRedshift.confirm">
+                      </input>
+                      <div class="help-block with-errors"></div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              <button type="submit" class="btn btn-primary">Create</button>
+              <span class="btn btn-default"
+                    ng-click="showAddNewSetting=false;reset()"
+                    type='reset'>
+                Cancel
+              </span>
+              </div>
+            </div>
+        </form>
         </div>
       </div>
     </div>
@@ -233,6 +255,7 @@ limitations under the License.
                                 creating : 'progress-bar progress-bar-striped active',
                                 error : 'progress-bar progress-bar-danger',
                                 terminating : 'progress-bar progress-bar-danger',
+                                deleting : 'progress-bar progress-bar-danger',
                                 terminated : 'progress-bar progress-bar-danger'}
                                 [setting.status]"
                           role="progressbar" aria-valuemax="100" style="width:100%">
@@ -248,9 +271,9 @@ limitations under the License.
               </span>
             </td>
             <td ng-if="setting.type != 'redshift'">
-              <div class="btn-group">
-                <label ng-repeat="app in setting.apps" class="btn-xs btn btn-primary">{{app.app}}</label>
-              </div>
+              <span ng-repeat="app in setting.apps">
+                <span class="label label-primary">{{app.app}}</span>
+              </span>
             </td>
           </tr>
         </table>

@@ -67,17 +67,44 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
           var setting = data.body[settingId];
           console.log(setting);
           clusterSettings.push(remoteSettingToLocalSetting(setting));
+          $scope.clusterSettings = clusterSettings;
           if ((setting.status === 'starting') || (setting.status === 'bootstrapping') || (setting.status === 'running') || (setting.status === 'terminating')) {
             getStatusCluster(setting.id);
           }
         }
-        $scope.clusterSettings = clusterSettings;
-
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
-  };
+    };
+
+    var getStatusCluster = function(clusterId) {
+      console.log(clusterId);
+      var clusterSettings = [];
+      var flag = 0;
+      var interval = $interval(function(){
+        $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/').
+        success(function(data, status, headers, config) {
+          console.log(data);
+          for (var settingId in data.body) {
+            var setting = data.body[settingId];
+            console.log(setting);
+            if ((setting.status === 'waiting') || (setting.status === 'success') || (setting.status === 'available') || (setting.status === 'terminated')) {
+              flag ++;
+              console.log(flag);
+
+            }
+          }
+          if (flag === data.body.length()) {
+            $interval.cancel(interval);
+            console.log("cancel");
+          }
+        }).
+        error(function(data, status, headers, config) {
+          console.log('Error %o %o', status, data.message);
+        });
+      }, 6000);
+    };
 
   $scope.updateClusterSetting = function(settingId) {
     var result = confirm('Do you want to update this cluster and restart with new memory?');
@@ -109,7 +136,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
   };
 
   $scope.addNewClusterSetting = function(type) {
-    $scope.showAddNewSetting = false;
     var name = '';
     var newSetting = {};
     //$scope.addNewClusterProperty();
@@ -130,10 +156,11 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         app: $scope.newClusterSettingHadoop.app
       };
     } else {
-      if (!$scope.newClusterSettingRedshift.name || !$scope.newClusterSettingRedshift.nodes) {
-        alert('Please determine name and memory');
+      if ($scope.newClusterSettingRedshift.passw !== $scope.newClusterSettingRedshift.confirm) {
+        alert('Whoops, the passwords don\'t match');
         return;
       }
+      console.log($scope.instance);
       name = $scope.newClusterSettingRedshift.name;
       var instance = 'ds2.xlarge'
       if ($scope.instance == 1) {
@@ -147,6 +174,8 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         instance : instance
       };
     }
+    $scope.showAddNewSetting = false;
+
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
       success(function(data, status, headers, config) {
         console.log('Success %o %o', status, data.message);
@@ -156,23 +185,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         console.log('Error %o %o', status, data.message);
       });
   };
-
-  var getStatusCluster = function(clusterId) {
-      console.log(clusterId);
-      var interval = $interval(function(){
-        $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/' + clusterId).
-          success(function(data, status, headers, config) {
-            console.log(data.message);
-            if ((data.message === 'waiting') || (data.message === 'success') || (data.message === 'available') || (data.message === 'terminated')) {
-              $interval.cancel(interval);
-              getClusterSettings();
-            }
-          }).
-          error(function(data, status, headers, config) {
-            console.log('Error %o %o', status, data.message);
-          });
-      }, 6000);
-    };
 
   $scope.addNewClusterProperty = function(settingId) {
     if(settingId === undefined) {
@@ -223,6 +235,10 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       hive:true,
       hue:false
     };
+  };
+
+  $scope.reset = function() {
+    $scope.newClusterSettingRedshift = {};
   };
 
   var init = function() {
