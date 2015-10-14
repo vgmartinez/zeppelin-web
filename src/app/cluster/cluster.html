@@ -56,7 +56,7 @@ limitations under the License.
         <div class="clusterSettingAdd"
              ng-show="showAddNewSetting">
           <hr />
-          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('emr');reset()">
+          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('emr')">
             <div class="col-md-12"
                ng-show="showAddNewSettingHadoop">
               <div class="form-group">
@@ -92,9 +92,14 @@ limitations under the License.
                     </div>
                   </td>
                   <td>
-                    <select class="selectpicker form-control" style="height:33px; width:130px" ng-model="instance">
-                      <option value>ds2.xlarge</option>
-                      <option>ds2.8xlarge</option>
+                    <select class="selectpicker form-control" style="height:33px; width:140px" ng-model="instance" required>
+                      <option value="" selected>Please select</option>
+                      <option>m3.xlarge</option>
+                      <option>m3.2xlarge</option>
+                      <option>c3.xlarge</option>
+                      <option>c3.2xlarge</option>
+                      <option>c3.4xlarge</option>
+                      <option>c3.8xlarge</option>
                     </select>
                   </td>
                   <td>
@@ -114,7 +119,7 @@ limitations under the License.
               </div>
             </div>
           </form>
-          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('redshift');reset()">
+          <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('redshift')">
             <div class="col-md-12"
                ng-show="showAddNewSettingRedshift">
               <div class="form-group">
@@ -152,8 +157,9 @@ limitations under the License.
                     </div>
                   </td>
                     <td>
-                      <select class="selectpicker form-control" style="height:33px; width:130px" ng-model="instance">
-                        <option value>ds2.xlarge</option>
+                      <select class="selectpicker form-control" style="height:33px; width:140px" ng-model="instance" required>
+                        <option value="" selected>Please select</option>
+                        <option>ds2.xlarge</option>
                         <option>ds2.8xlarge</option>
                       </select>
                     </td>
@@ -171,13 +177,14 @@ limitations under the License.
                     <div class="form-group">
                       <input id="newClusterPassw"
                          class="form-control"
-                         pattern="^[_A-z0-9]{1,}$"
+                         pattern="((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,64})"
+                         tooltip="Password must contain 8 to 64. It must contain 1 uppercase letter, 1 lowercase letter, and 1 number."
                          type="password"
                          data-minlength="6"
+                         data-maxlength="64"
                          required
                          ng-model="newClusterSettingRedshift.passw">
                       </input>
-                      <span class="help-block">Minimum of 6 characters</span>
                     </div>
                   </td>
                   <td>
@@ -248,15 +255,9 @@ limitations under the License.
             <td>
               <div class="progress" style="width: 80px">
                 <div  ng-class="{running : 'progress-bar progress-bar-success',
-                                waiting : 'progress-bar progress-bar-success',
-                                available : 'progress-bar progress-bar-success',
                                 starting : 'progress-bar progress-bar-striped active',
-                                bootstrapping : 'progress-bar progress-bar-striped active',
-                                creating : 'progress-bar progress-bar-striped active',
-                                error : 'progress-bar progress-bar-danger',
-                                terminating : 'progress-bar progress-bar-danger',
-                                deleting : 'progress-bar progress-bar-danger',
-                                terminated : 'progress-bar progress-bar-danger'}
+                                failed : 'progress-bar progress-bar-danger',
+                                deleting : 'progress-bar progress-bar-danger'}
                                 [setting.status]"
                           role="progressbar" aria-valuemax="100" style="width:100%">
                   {{setting.status}}

@@ -68,7 +68,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
           console.log(setting);
           clusterSettings.push(remoteSettingToLocalSetting(setting));
           $scope.clusterSettings = clusterSettings;
-          if ((setting.status === 'starting') || (setting.status === 'bootstrapping') || (setting.status === 'running') || (setting.status === 'terminating')) {
+          if ((setting.status === 'starting') || (setting.status === 'deleting')) {
             getStatusCluster(setting.id);
           }
         }
@@ -87,15 +87,15 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         success(function(data, status, headers, config) {
           console.log(data);
           for (var settingId in data.body) {
+            var flag = 0;
             var setting = data.body[settingId];
             console.log(setting);
-            if ((setting.status === 'waiting') || (setting.status === 'success') || (setting.status === 'available') || (setting.status === 'terminated')) {
+            if ((setting.status === 'running') || (setting.status === 'failed')) {
               flag ++;
               console.log(flag);
-
             }
           }
-          if (flag === data.body.length()) {
+          if (flag === data.body.length) {
             $interval.cancel(interval);
             console.log("cancel");
           }
@@ -144,15 +144,12 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         alert('Please determine name and memory');
         return;
       }
+      reset();
       name = $scope.newClusterSettingHadoop.name;
-      var instance = 'm3.xlarge'
-      if ($scope.instance == 1) {
-        type = 'm3.8xlarge'
-      }
       newSetting = {
         name : $scope.newClusterSettingHadoop.name,
         slaves : $scope.newClusterSettingHadoop.slaves,
-        instance: instance,
+        instance: $scope.instance,
         app: $scope.newClusterSettingHadoop.app
       };
     } else {
@@ -160,22 +157,18 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         alert('Whoops, the passwords don\'t match');
         return;
       }
-      console.log($scope.instance);
+      reset();
       name = $scope.newClusterSettingRedshift.name;
-      var instance = 'ds2.xlarge'
-      if ($scope.instance == 1) {
-        type = 'ds2.8xlarge'
-      }
       newSetting = {
         name : $scope.newClusterSettingRedshift.name,
         slaves : $scope.newClusterSettingRedshift.nodes,
         user: $scope.newClusterSettingRedshift.user,
         passw: $scope.newClusterSettingRedshift.passw,
-        instance : instance
+        instance : $scope.instance
       };
     }
     $scope.showAddNewSetting = false;
-
+    /*
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
       success(function(data, status, headers, config) {
         console.log('Success %o %o', status, data.message);
@@ -184,6 +177,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
+      */
   };
 
   $scope.addNewClusterProperty = function(settingId) {
@@ -237,8 +231,9 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     };
   };
 
-  $scope.reset = function() {
+  var reset = function() {
     $scope.newClusterSettingRedshift = {};
+    $scope.newClusterSettingHadoop = {};
   };
 
   var init = function() {
