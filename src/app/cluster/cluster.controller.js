@@ -144,7 +144,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         alert('Please determine name and memory');
         return;
       }
-      reset();
+
       name = $scope.newClusterSettingHadoop.name;
       newSetting = {
         name : $scope.newClusterSettingHadoop.name,
@@ -157,7 +157,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         alert('Whoops, the passwords don\'t match');
         return;
       }
-      reset();
       name = $scope.newClusterSettingRedshift.name;
       newSetting = {
         name : $scope.newClusterSettingRedshift.name,
@@ -172,6 +171,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
       success(function(data, status, headers, config) {
         console.log('Success %o %o', status, data.message);
+        reset();
         getClusterSettings();
       }).
       error(function(data, status, headers, config) {
