@@ -168,7 +168,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       };
     }
     $scope.showAddNewSetting = false;
-    /*
+
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
       success(function(data, status, headers, config) {
         console.log('Success %o %o', status, data.message);
@@ -177,7 +177,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
-      */
   };
 
   $scope.addNewClusterProperty = function(settingId) {
