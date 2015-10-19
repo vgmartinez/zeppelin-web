@@ -1,28 +1,30 @@
-  /* global confirm:false, alert:false */
+/* global confirm:false, alert:false */
 /* jshint loopfunc: true */
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 'use strict';
 
 /**
- * @ngdoc function
- * @name zeppelinWebApp.controller:ClusterCtrl
- * @description
- * # ClusterCtrl
- * Controller of cluster, manage the note (update)
- */
-angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $interval, $modal, $log, baseUrlSrv) {
+* @ngdoc function
+* @name zeppelinWebApp.controller:ClusterCtrl
+* @description
+* # ClusterCtrl
+* Controller of cluster, manage the note (update)
+*/
+angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $timeout, $modal, $log, baseUrlSrv) {
+  $scope.statusTimer = null;
+
   var remoteSettingToLocalSetting = function(setting) {
     var ui = [];
     var apps = [];
@@ -58,53 +60,44 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     };
   };
 
-  var getClusterSettings = function() {
-    $http.get(baseUrlSrv.getRestApiBase()+'/cluster/setting').
-      success(function(data, status, headers, config) {
-        var clusterSettings = [];
-
-        for (var settingId in data.body) {
-          var setting = data.body[settingId];
-          console.log(setting);
-          clusterSettings.push(remoteSettingToLocalSetting(setting));
-          $scope.clusterSettings = clusterSettings;
-          if ((setting.status === 'starting') || (setting.status === 'deleting')) {
-            getStatusCluster(setting.id);
-          }
+  var getStatusCluster = function() {
+    var clusterSettings = [];
+    var flag = 0;
+    $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/').
+    success(function(data, status, headers, config) {
+      for (var settingId in data.body) {
+        var setting = data.body[settingId];
+        clusterSettings.push(remoteSettingToLocalSetting(setting));
+        $scope.clusterSettings = clusterSettings;
+        if ((setting.status === 'running') || (setting.status === 'failed')) {
+          flag ++;
         }
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
-    };
+      }
+      if (flag === data.body.length) {
+        $scope.killStatusTimer();
+      } else {
+        $scope.startStatusTimer();
+      }
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
+  };
 
-    var getStatusCluster = function(clusterId) {
-      console.log(clusterId);
-      var clusterSettings = [];
-      var flag = 0;
-      var interval = $interval(function(){
-        $http.get(baseUrlSrv.getRestApiBase()+'/cluster/status/').
-        success(function(data, status, headers, config) {
-          console.log(data);
-          for (var settingId in data.body) {
-            var flag = 0;
-            var setting = data.body[settingId];
-            console.log(setting);
-            if ((setting.status === 'running') || (setting.status === 'failed')) {
-              flag ++;
-              console.log(flag);
-            }
-          }
-          if (flag === data.body.length) {
-            $interval.cancel(interval);
-            console.log("cancel");
-          }
-        }).
-        error(function(data, status, headers, config) {
-          console.log('Error %o %o', status, data.message);
-        });
-      }, 6000);
-    };
+  $scope.killStatusTimer = function() {
+    if($scope.statusTimer){
+      $timeout.cancel($scope.statusTimer);
+      $scope.statusTimer = null;
+    }
+  };
+
+  $scope.startStatusTimer = function() {
+    console.log("dentro de startStatusTimer");
+    $scope.killStatusTimer();
+    $scope.statusTimer = $timeout(function(){
+      getStatusCluster();
+    }, 10000);
+  };
 
   $scope.updateClusterSetting = function(settingId) {
     var result = confirm('Do you want to update this cluster and restart with new memory?');
@@ -128,7 +121,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     }
     $http.put(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId, request).
     success(function(data, status, headers, config) {
-      getClusterSettings();
+      //getClusterSettings();
     }).
     error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
@@ -169,14 +162,15 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $scope.showAddNewSetting = false;
 
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
-      success(function(data, status, headers, config) {
-        console.log('Success %o %o', status, data.message);
-        reset();
-        getClusterSettings();
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+      console.log('Success %o %o', status, data.message);
+      reset();
+      getStatusCluster();
+      $scope.startStatusTimer();
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   $scope.addNewClusterProperty = function(settingId) {
@@ -209,17 +203,12 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       return;
     }
     $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId).
-      success(function(data, status, headers, config) {
-        for (var i=0; i < $scope.clusterSettings.length; i++) {
-          var setting = $scope.clusterSettings[i];
-          if (setting.id === settingId) {
-            getStatusCluster(settingId);
-          }
-        }
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+      getStatusCluster();
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   $scope.appToHadoop = function() {
@@ -238,8 +227,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
   var init = function() {
     $rootScope.$emit('setLookAndFeel', 'default');
     $scope.clusterSettings = [];
-    $scope.availableClusters = {};
-    getClusterSettings();
+    getStatusCluster();
   };
 
   init();

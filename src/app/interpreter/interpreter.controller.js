@@ -310,7 +310,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       success(function(data, status, headers, config) {
         console.log('Interpreter binding %o saved', url);
         $scope.showSetting = false;
-        $scope.updateInterpreterSettingCluster(settingId, url);
+        $scope.updateSettingCluster(settingId, url);
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
