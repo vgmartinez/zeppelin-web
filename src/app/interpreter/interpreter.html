@@ -43,15 +43,17 @@ limitations under the License.
           <small>
             <span ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
-              <span ng-show="!$first">, </span>
-              %{{interpreter.name}}
+              <span ng-show="$parent.$first && $first">%{{setting.name}} (default)</span>
+              <span ng-show="$parent.$first && !$first">, %{{interpreter.name}}</span>
+              <span ng-show="!$parent.$first && $first">%{{setting.name}}</span>
+              <span ng-show="!$parent.$first && !$first">, %{{setting.name}}.{{interpreter.name}}</span>
             </span>
           </small>
         </h3>
         <span style="float:right">
-          <button ng-show="setting.group === 'spark' || setting.group === 'redshift' || setting.group === 'hive' ? true: false"
+          <button ng-show="setting.group === 'spark' || setting.group === 'redshift' || setting.group === 'hive' || setting.group === 'psql' ? true: false"
               class="btn btn-default btn-xs"
-              ng-click="toggleSetting(setting.id, setting.group)"
+              ng-click="toggleSetting(setting)"
               tooltip-placement="top" tooltip="Set cluster">
             <span class="fa fa-cog"
                  ng-style="{color: 'black' }">
@@ -90,7 +92,7 @@ limitations under the License.
         </div>
         <br />
         <div>
-          <button class="btn btn-success" ng-click="saveSetting(setting.id)">Save</button>
+          <button class="btn btn-success" ng-click="saveSetting(setting)">Save</button>
           <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
         </div>
       <br />

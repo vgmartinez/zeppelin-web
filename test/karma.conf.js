@@ -60,6 +60,7 @@ module.exports = function(config) {
       'src/app/app.js',
       'src/app/app.controller.js',
       'src/app/**/*.js',
+      'src/components/**/*.js',
       'test/spec/**/*.js'
     ],
 
@@ -81,10 +82,22 @@ module.exports = function(config) {
       'PhantomJS'
     ],
 
+    reporters: 'coverage',
+
+    preprocessors: {
+      'src/*/{*.js,!(test)/**/*.js}': 'coverage'
+    },
+
+    coverageReporter: {
+      type: 'html',
+      dir: 'reports/coverage'
+    },
+
     // Which plugins to enable
     plugins: [
       'karma-phantomjs-launcher',
-      'karma-jasmine'
+      'karma-jasmine',
+      'karma-coverage'
     ],
 
     // Continuous Integration mode

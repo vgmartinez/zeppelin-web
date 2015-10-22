@@ -24,7 +24,7 @@
 */
 angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $timeout, $modal, $log, baseUrlSrv) {
   $scope.statusTimer = null;
-
+  $scope.clusterSettings = null;
   var remoteSettingToLocalSetting = function(setting) {
     var ui = [];
     var apps = [];
@@ -39,7 +39,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         master = setting.urls[key];
       }
     }
-
     for (var key in setting.apps) {
       if (setting.apps[key]) {
         apps.push({
@@ -51,9 +50,12 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     return {
       id : setting.id,
       name : setting.name,
+      user: setting.user,
       memory : setting.slaves,
       status : setting.status,
       master: master,
+      storage: setting.storage,
+      engine: setting.engine,
       type : setting.type,
       apps: apps,
       ui: ui
@@ -145,7 +147,7 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         instance: $scope.instance,
         app: $scope.newClusterSettingHadoop.app
       };
-    } else {
+    } else if(type === 'redshift') {
       if ($scope.newClusterSettingRedshift.passw !== $scope.newClusterSettingRedshift.confirm) {
         alert('Whoops, the passwords don\'t match');
         return;
@@ -158,8 +160,24 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         passw: $scope.newClusterSettingRedshift.passw,
         instance : $scope.instance
       };
+    } else {
+      if ($scope.newClusterSettingRds.passw !== $scope.newClusterSettingRds.confirm) {
+        alert('Whoops, the passwords don\'t match');
+        return;
+      }
+      name = $scope.newClusterSettingRds.name;
+      newSetting = {
+        name : $scope.newClusterSettingRds.name,
+        storage : $scope.newClusterSettingRds.storage,
+        engine: $scope.newClusterSettingRds.engine,
+        version: $scope.version,
+        user: $scope.newClusterSettingRds.user,
+        passw: $scope.newClusterSettingRds.passw,
+        instance : $scope.instance
+      };
     }
     $scope.showAddNewSetting = false;
+    console.log($scope.version);
 
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
     success(function(data, status, headers, config) {
@@ -197,12 +215,12 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
       }
     }
   };
-  $scope.removeClusterSetting = function(settingId) {
+  $scope.removeClusterSetting = function(setting) {
     var result = confirm('Do you want to delete this cluster?');
     if (!result) {
       return;
     }
-    $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+settingId).
+    $http.delete(baseUrlSrv.getRestApiBase()+'/cluster/setting/'+setting.type+'/'+setting.id).
     success(function(data, status, headers, config) {
       getStatusCluster();
     }).
@@ -224,10 +242,36 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
     $scope.newClusterSettingHadoop = {};
   };
 
+  $scope.loadInstances = function(engine) {
+    console.log(engine);
+
+    switch (engine) {
+      case 'aurora':
+        $scope.instanceType = ['db.r3.8xlarge', 'db.r3.4xlarge', 'db.r3.2xlarge', 'db.r3.xlarge','db.r3.large'];
+        $scope.versionEngine = ['5.6.10a'];
+        break;
+      case 'mysql':
+      $scope.versionEngine = ['5.5.40b', '5.5.41', '5.5.42', '5.6.19a', '5.6.19b', '5.6.21', '5.6.21b', '5.6.22', '5.6.23'];
+        $scope.instanceType = ['db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge'];
+        break;
+      case 'postgres':
+        $scope.versionEngine = ['9.3.3', '9.3.5', '9.3.6', '9.4.1'];
+        $scope.instanceType = ['db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge'];
+        break;
+      case 'mariadb':
+        $scope.versionEngine = ['10.0.17'];
+        $scope.instanceType = ['db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge'];
+        break;
+    }
+  };
+
   var init = function() {
     $rootScope.$emit('setLookAndFeel', 'default');
     $scope.clusterSettings = [];
     getStatusCluster();
+    $scope.newClusterSettingRds = {
+      engine: 'postgres'
+    };
   };
 
   init();

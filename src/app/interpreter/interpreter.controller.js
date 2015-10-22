@@ -205,31 +205,68 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
   };
 
-  var getClusterSettings = function(id, group) {
-    $http.get(baseUrlSrv.getRestApiBase()+ '/cluster/setting').
-      success(function(data, status, headers, config) {
-        var clusterSettings = [];
-        var aux;
-        if (group === 'hive' || group === 'spark') {
-          aux = 'emr';
-        } else {
-          aux = 'redshift'
-        }
+  $scope.updateInterpreterSettingCluster = function(setting, cluster) {
+    var index = _.findIndex($scope.interpreterSettings, { 'id': setting.id });
+    console.log(cluster);
+    var newProperties = angular.copy($scope.interpreterSettings[index].properties);
 
-        for (var settingId in data.body) {
-          var setting = data.body[settingId];
-          if (setting.type === aux) {
-            clusterSettings.push(setting);
-          }
+    if (setting.group === 'hive') {
+      for (var p in newProperties) {
+        if (p === 'hive.hiveserver2.url') {
+          newProperties[p] = 'jdbc:hive2://' + cluster.urls.dns + ':10000';
         }
-        console.log(clusterSettings);
-        $scope.clusterSettings = clusterSettings;
+      }
+    } else if (setting.group === 'psql') {
+      for (var p in newProperties) {
+        if (p === 'postgresql.url') {
+          newProperties[p] = 'jdbc:postgresql://' + cluster.urls.dns + '/';
+        }else if (p === 'postgresql.user'){
+          newProperties[p] = cluster.user;
+        }
+      }
+    }
 
-        $scope.clusterSettingsOrig = jQuery.extend(true, [], $scope.clusterSettings); // to check dirty
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    var request = {
+      properties : newProperties,
+    };
+
+    $http.put(baseUrlSrv.getRestApiBase()+'/interpreter/setting/'+setting.id, request).
+    success(function(data, status, headers, config) {
+      $scope.interpreterSettings[index] = data.body;
+      removeTMPSettings(index);
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
+  };
+
+  var getClusterSettings = function(settingInt) {
+    $http.get(baseUrlSrv.getRestApiBase()+ '/cluster/status').
+    success(function(data, status, headers, config) {
+      var clusterSettings = [];
+      var aux;
+      console.log(settingInt);
+      if (settingInt.group === 'hive' || settingInt.group === 'spark') {
+        aux = 'emr';
+      } else if (settingInt.group === 'redshift'){
+        aux = 'redshift'
+      } else if (settingInt.group === 'psql'){
+        aux = 'postgres';
+      }
+
+      for (var settingId in data.body) {
+        var setting = data.body[settingId];
+        if (setting.engine === aux) {
+          clusterSettings.push(setting);
+        }
+      }
+      $scope.clusterSettings = clusterSettings;
+
+      $scope.clusterSettingsOrig = jQuery.extend(true, [], $scope.clusterSettings); // to check dirty
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   var isSettingDirty = function() {
@@ -240,19 +277,19 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
   };
 
-  $scope.toggleSetting = function(id, group) {
-    console.log(group);
+  $scope.toggleSetting = function(setting) {
+    console.log(setting);
     if ($scope.showSetting) {
       $scope.closeSetting();
     } else {
-      $scope.openSetting(id, group);
+      $scope.openSetting(setting);
     }
   };
 
-  $scope.openSetting = function(id, group) {
+  $scope.openSetting = function(setting) {
     $scope.showSetting = true;
-    $scope.nameInt = id;
-    getClusterSettings(id, group);
+    $scope.nameInt = setting.id;
+    getClusterSettings(setting);
   };
 
   $scope.closeSetting = function() {
@@ -265,15 +302,18 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.showSetting = false;
   };
 
-  $scope.saveSetting = function(settingId) {
+  $scope.saveSetting = function(interpreter) {
     var selectedSettingIds = [];
+    var selectedId;
+    var type;
+    var cluster;
+
     for (var no in $scope.clusterSettings) {
       var setting = $scope.clusterSettings[no];
       if (setting.selected) {
         selectedSettingIds.push(setting);
       }
     }
-    //console.log(selectedSettingIds);
     if (selectedSettingIds.length > 1) {
       var result = alert('Select only one cluster.');
       if (!result) {
@@ -286,31 +326,18 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         return;
       }
     }
-    var selectedId;
-    var url;
-    if (selectedSettingIds.length == 0) {
-      selectedId = '';
-      for (var no in $scope.clusterSettings) {
-        var setting = $scope.clusterSettings[no];
-        if (setting.id === settingId) {
-          if (setting.group === 'hive') {
-            url = 'localhost';
-          } else {
-            url = 'local[*]'
-          }
-        }
-      }
-    } else {
-      console.log(selectedSettingIds);
+    console.log(selectedSettingIds);
+    if (selectedSettingIds.length !== 0) {
       selectedId = selectedSettingIds[0].id;
-      url = selectedSettingIds[0].url;
+      type = selectedSettingIds[0].type;
+      cluster = selectedSettingIds[0];
     }
     console.log(selectedId);
-    $http.put(baseUrlSrv.getRestApiBase() + '/cluster/set/' + settingId, selectedId).
+    $http.put(baseUrlSrv.getRestApiBase() + '/cluster/set/' + interpreter.id + '/' + type + '/' + selectedId).
       success(function(data, status, headers, config) {
-        console.log('Interpreter binding %o saved', url);
+        console.log('Interpreter binding %o saved', cluster.urls);
         $scope.showSetting = false;
-        $scope.updateSettingCluster(settingId, url);
+        $scope.updateInterpreterSettingCluster(interpreter, cluster);
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);

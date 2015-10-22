@@ -429,7 +429,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
-
+    console.log($scope);
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
 
@@ -633,7 +633,7 @@ angular.module('zeppelinWebApp')
       desc += ' (outdated)';
     }
     return desc;
-  };  
+  };
 
   $scope.isResultOutdated = function() {
     var pdata = $scope.paragraph;
@@ -1677,7 +1677,7 @@ angular.module('zeppelinWebApp')
 
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
   };
 });

@@ -23,8 +23,9 @@ limitations under the License.
           Create
           </button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
-            <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting;appToHadoop()">EMR</a> </li>
-            <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingHadoop=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingRds=false;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting;appToHadoop()">EMR</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingRds=false;showAddNewSettingHadoop=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingRds=true;loadInstances('postgres');showAddNewSettingRedshift=false;showAddNewSettingHadoop=false;newClusterSettingRds.storage=5; showAddNewSetting = !showAddNewSetting">RDS</a> </li>
           </ul>
         </div>
       </div>
@@ -209,86 +210,285 @@ limitations under the License.
               </div>
             </div>
         </form>
+        <form data-toggle="validator" role="form" ng-submit="addNewClusterSetting('rds')">
+          <div class="col-md-12"
+             ng-show="showAddNewSettingRds">
+            <div class="form-group">
+            <h4>Create new instanceDB in RDS</h4>
+            <table class="table table-striped properties">
+              <tr>
+                <th for="inputName" class="control-label">name</th>
+                <th>storage</th>
+                <th>type</th>
+                <th>engine</th>
+                <th>version</th>
+                <th>user</th>
+                <th>password</th>
+                <th>confirm</th>
+              </tr>
+              <tr>
+                <td>
+                  <div class="form-group">
+                    <input id="newClusterSettingName"
+                       class="form-control"
+                       required
+                       pu-elastic-input-minwidth="180px"
+                       ng-model="newClusterSettingRds.name">
+                    </input>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-group">
+                    <input id="newClusterSettingMemory"
+                       class="form-control"
+                       type="number"
+                       data-toggle="validator"
+                       required
+                       min="5" max="1024" step="1"
+                       ng-model="newClusterSettingRds.storage">
+                    </input>
+                  </div>
+                </td>
+                <td>
+                  <select class="selectpicker form-control" style="height:33px; width:140px" ng-model="instance" required>
+                    <option value="" selected>Please select</option>
+                    <option ng-repeat="instance in instanceType">{{instance}}</option>
+                  </select>
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <label class="btn btn-primary" ng-model="newClusterSettingRds.engine" ng-change="loadInstances('postgres')" btn-radio="'postgres'">postgresql</label>
+                    <label class="btn btn-primary" ng-model="newClusterSettingRds.engine" ng-change="loadInstances('mysql')" btn-radio="'mysql'">mysql</label>
+                    <label class="btn btn-primary" ng-model="newClusterSettingRds.engine" ng-change="loadInstances('mariadb')" btn-radio="'mariadb'">mariadb</label>
+                  </div>
+                </td>
+                <td>
+                  <select class="selectpicker form-control" style="height:33px; width:140px" ng-model="version" required>
+                    <option value="" selected>Please select</option>
+                    <option ng-repeat="version in versionEngine">{{version}}</option>
+                  </select>
+                </td>
+                <td>
+                  <div class="form-group">
+                    <input id="newClusterSettingMemory"
+                       class="form-control"
+                       required
+                       pu-elastic-input-minwidth="180px"
+                       ng-model="newClusterSettingRds.user">
+                    </input>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-group">
+                    <input id="newClusterPassw"
+                       class="form-control"
+                       pattern="((?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,64})"
+                       tooltip="Password must contain 8 to 64. It must contain 1 uppercase letter, 1 lowercase letter, and 1 number."
+                       type="password"
+                       data-minlength="6"
+                       data-maxlength="64"
+                       required
+                       ng-model="newClusterSettingRds.passw">
+                    </input>
+                  </div>
+                </td>
+                <td>
+                  <div class="form-group">
+                    <input id="newClusterSettingMemory"
+                       class="form-control"
+                       type="password"
+                       required
+                       ng-model="newClusterSettingRds.confirm">
+                    </input>
+                    <div class="help-block with-errors"></div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            <button type="submit" class="btn btn-primary">Create</button>
+            <span class="btn btn-default"
+                  ng-click="showAddNewSetting=false;reset()"
+                  type='reset'>
+              Cancel
+            </span>
+            </div>
+          </div>
+        </form>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="box width-full"
-     ng-repeat="setting in clusterSettings">
-  <div>
-    <div class="row interpreter">
-      <div class="col-md-12">
-        <h3 class="new_h3" style="float:left">
-          {{setting.type}}
-        </h3>
-        <span style="float:right">
-          <button class="btn btn-default btn-xs"
-                  ng-click="valueform.$show();
-                  copyOriginClusterSettingProperties(setting.id)">
-            <span class="fa fa-pencil"></span> resize</button>
-          <button class="btn btn-default btn-xs"
-                  ng-click="removeClusterSetting(setting.id)">
-            <span class="fa fa-remove"></span> remove</button>
-        </span>
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a data-target="#emr" role="tab" data-toggle="tab">EMR</a></li>
+  <li role="presentation"><a data-target="#storage" role="tab" data-toggle="tab">DB</a></li>
+</ul>
+
+<div class="tab-content">
+  <div role="tabpanel" class="tab-pane active" id="emr">
+
+    <div class="box width-full"
+         ng-repeat="setting in clusterSettings"
+         ng-if="setting.type === 'emr'">
+      <div>
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <h3 class="new_h3" style="float:left">
+              {{setting.type}}
+            </h3>
+            <span style="float:right">
+              <button class="btn btn-default btn-xs"
+                      ng-click="valueform.$show();
+                      copyOriginClusterSettingProperties(setting.id)">
+                <span class="fa fa-pencil"></span> resize</button>
+              <button class="btn btn-default btn-xs"
+                      ng-click="removeClusterSetting(setting)">
+                <span class="fa fa-remove"></span> remove</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <table class="table table-striped">
+              <tr>
+                <th style="width:15%">name</th>
+                <th style="width:10%">nodes</th>
+                <th style="width:15%">status</th>
+                <th style="width:40%" >master</th>
+                <th style="width:10%">ui</th>
+                <th style="width:10%">aplications</th>
+              </tr>
+              <tr>
+                <td>{{setting.name}}</td>
+                <td>
+                  <span editable-textarea="setting.memory" e-form="valueform" e-msd-elastic>
+                    {{setting.memory}}
+                  </span>
+                </td>
+                <td>
+                  <div class="progress" style="width: 80px">
+                    <div  ng-class="{running : 'progress-bar progress-bar-success',
+                                    starting : 'progress-bar progress-bar-striped active',
+                                    failed : 'progress-bar progress-bar-danger',
+                                    deleting : 'progress-bar progress-bar-danger'}
+                                    [setting.status]"
+                              role="progressbar" aria-valuemax="100" style="width:100%">
+                      {{setting.status}}
+                    </div>
+                  </div>
+                </td>
+                <td>{{setting.master}}</td>
+
+                <td>
+                  <span ng-repeat="ui in setting.ui">
+                    <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
+                  </span>
+                </td>
+                <td>
+                  <span ng-repeat="app in setting.apps">
+                    <span class="label label-primary">{{app.app}}</span>
+                  </span>
+                </td>
+              </tr>
+            </table>
+            <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
+              <button type="submit" class="btn btn-info"
+                      ng-disabled="valueform.$waiting">
+                Save
+              </button>
+              <button type="button" class="btn btn-default"
+                      ng-disabled="valueform.$waiting"
+                      ng-click="valueform.$cancel(); resetClusterSetting(setting.id)">
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row interpreter">
-      <div class="col-md-12">
-        <table class="table table-striped">
-          <tr>
-            <th style="width:15%">name</th>
-            <th style="width:10%">nodes</th>
-            <th style="width:15%">status</th>
-            <th style="width:40%">master</th>
-            <th style="width:10%" ng-if="setting.type != 'redshift'">ui</th>
-            <th style="width:10%" ng-if="setting.type != 'redshift'">aplications</th>
-          </tr>
-          <tr>
-            <td>{{setting.name}}</td>
-            <td>
-              <span editable-textarea="setting.memory" e-form="valueform" e-msd-elastic>
-                {{setting.memory}}
-              </span>
-            </td>
-            <td>
-              <div class="progress" style="width: 80px">
-                <div  ng-class="{running : 'progress-bar progress-bar-success',
-                                starting : 'progress-bar progress-bar-striped active',
-                                failed : 'progress-bar progress-bar-danger',
-                                deleting : 'progress-bar progress-bar-danger'}
-                                [setting.status]"
-                          role="progressbar" aria-valuemax="100" style="width:100%">
-                  {{setting.status}}
-                </div>
-              </div>
-            </td>
-            <td>{{setting.master}}</td>
+  </div>
+  <div role="tabpanel" class="tab-pane" id="storage">
+    <div class="box width-full"
+         ng-repeat="setting in clusterSettings"
+         ng-if="(setting.type === 'redshift') || (setting.type === 'rds')">
+      <div>
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <h3 class="new_h3" style="float:left">
+              {{setting.type}}
+            </h3>
+            <span style="float:right">
+              <button class="btn btn-default btn-xs"
+                      ng-click="valueform.$show();
+                      copyOriginClusterSettingProperties(setting.id)">
+                <span class="fa fa-pencil"></span> resize</button>
+              <button class="btn btn-default btn-xs"
+                      ng-click="removeClusterSetting(setting)">
+                <span class="fa fa-remove"></span> remove</button>
+            </span>
+          </div>
+        </div>
 
-            <td ng-if="setting.type != 'redshift'">
-              <span ng-repeat="ui in setting.ui">
-                <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
-              </span>
-            </td>
-            <td ng-if="setting.type != 'redshift'">
-              <span ng-repeat="app in setting.apps">
-                <span class="label label-primary">{{app.app}}</span>
-              </span>
-            </td>
-          </tr>
-        </table>
-        <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
-          <button type="submit" class="btn btn-info"
-                  ng-disabled="valueform.$waiting">
-            Save
-          </button>
-          <button type="button" class="btn btn-default"
-                  ng-disabled="valueform.$waiting"
-                  ng-click="valueform.$cancel(); resetClusterSetting(setting.id)">
-            Cancel
-          </button>
-        </form>
+        <div class="row interpreter">
+          <div class="col-md-12">
+            <table class="table table-striped">
+              <tr>
+                <th style="width:10%">name</th>
+                <th style="width:10%">user</th>
+                <th style="width:10%" ng-if="setting.type === 'redshift'">nodes</th>
+                <th style="width:10%" ng-if="setting.type === 'rds'">storage</th>
+                <th style="width:10%" ng-if="setting.type === 'rds'">engine</th>
+                <th style="width:10%">dbname</th>
+                <th style="width:15%">status</th>
+                <th>endpoint</th>
+              </tr>
+              <tr>
+                <td>{{setting.name}}</td>
+                <td>{{setting.user}}</td>
+                <td ng-if="setting.type === 'redshift'">
+                  <span editable-textarea="setting.memory" e-form="valueform" e-msd-elastic>
+                    {{setting.memory}}
+                  </span>
+                </td>
+                <td ng-if="setting.type === 'rds'">
+                  <span editable-textarea="setting.storage" e-form="valueform" e-msd-elastic>
+                    {{setting.storage}}
+                  </span>
+                </td>
+                <td>{{setting.engine}}</td>
+                <td>{{setting.name}}</td>
+                <td>
+                  <div class="progress" style="width: 80px">
+                    <div  ng-class="{running : 'progress-bar progress-bar-success',
+                                    starting : 'progress-bar progress-bar-striped active',
+                                    failed : 'progress-bar progress-bar-danger',
+                                    deleting : 'progress-bar progress-bar-danger'}
+                                    [setting.status]"
+                              role="progressbar" aria-valuemax="100" style="width:100%">
+                      {{setting.status}}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {{setting.master}}
+                </td>
+              </tr>
+            </table>
+            <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
+              <button type="submit" class="btn btn-info"
+                      ng-disabled="valueform.$waiting">
+                Save
+              </button>
+              <button type="button" class="btn btn-default"
+                      ng-disabled="valueform.$waiting"
+                      ng-click="valueform.$cancel(); resetClusterSetting(setting.id)">
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
